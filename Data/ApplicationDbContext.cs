@@ -13,6 +13,7 @@ namespace Tp3.Data
         public DbSet<Membership> Memberships { get; set; } = null!;
         public DbSet<Genre> Genres { get; set; } = null!;
         public DbSet<Movie> Movies { get; set; } = null!;
+        public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

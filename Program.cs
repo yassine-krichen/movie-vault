@@ -1,16 +1,27 @@
 using Microsoft.EntityFrameworkCore;
 using Tp3.Data;
+using Tp3.Repositories;
+
+// Enable legacy timestamp behavior for Npgsql to avoid UTC issues
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add DbContext with PostgreSQL
+// Add DbContext with PostgreSQL and Audit Interceptor
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<Tp3.Data.ApplicationDbContext>(options =>
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
+           .AddInterceptors(new AuditInterceptor())
 );
+
+// Register repositories
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IMembershipRepository, MembershipRepository>();
+builder.Services.AddScoped<IGenreRepository, GenreRepository>();
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 
 var app = builder.Build();
 

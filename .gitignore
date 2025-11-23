@@ -1,0 +1,33 @@
+# Build
+bin/
+obj/
+publish/
+
+# VS
+.vs/
+*.user
+*.rsuser
+*.suo
+*.userprefs
+*.cache
+*.dbmdl
+*.jfm
+
+# Config locale
+appsettings.Development.json
+*.local.json
+
+# NuGet
+packages/
+*.nupkg
+
+# ASP.NET Core
+wwwroot/lib/
+
+# IDE
+.vscode/
+.idea/
+
+# OS artifacts
+Thumbs.db
+.DS_Store

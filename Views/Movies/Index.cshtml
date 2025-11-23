@@ -1,0 +1,97 @@
+@model Tp3.ViewModels.PaginatedListViewModel<Tp3.ViewModels.MovieViewModel>
+
+@{
+    ViewData["Title"] = "Movies";
+}
+
+<h1>Movies</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Create New Movie</a>
+</p>
+
+@if (ViewBag.Errors != null)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                <a asp-action="Index" asp-route-sortBy="Id" asp-route-ascending="@(!Model.Ascending)" asp-route-page="1">
+                    ID @if (Model.SortBy == "Id") { @(Model.Ascending ? "▲" : "▼") }
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortBy="Name" asp-route-ascending="@(!Model.Ascending)" asp-route-page="1">
+                    Name @if (Model.SortBy == "Name") { @(Model.Ascending ? "▲" : "▼") }
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortBy="GenreId" asp-route-ascending="@(!Model.Ascending)" asp-route-page="1">
+                    Genre @if (Model.SortBy == "GenreId") { @(Model.Ascending ? "▲" : "▼") }
+                </a>
+            </th>
+            <th>
+                <a asp-action="Index" asp-route-sortBy="DateAjoutMovie" asp-route-ascending="@(!Model.Ascending)" asp-route-page="1">
+                    Date Added @if (Model.SortBy == "DateAjoutMovie") { @(Model.Ascending ? "▲" : "▼") }
+                </a>
+            </th>
+            <th>Image</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.GenreName</td>
+                <td>@(item.DateAjoutMovie?.ToString("yyyy-MM-dd") ?? "N/A")</td>
+                <td>
+                    @if (!string.IsNullOrEmpty(item.ImageFile))
+                    {
+                        <img src="@item.ImageFile" alt="@item.Name" style="max-width: 50px; max-height: 50px;" />
+                    }
+                    else
+                    {
+                        <span>No image</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+            <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)" asp-route-sortBy="@Model.SortBy" asp-route-ascending="@Model.Ascending">Previous</a>
+        </li>
+        @for (int i = 1; i <= Model.TotalPages; i++)
+        {
+            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                <a class="page-link" asp-action="Index" asp-route-page="@i" asp-route-sortBy="@Model.SortBy" asp-route-ascending="@Model.Ascending">@i</a>
+            </li>
+        }
+        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+            <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)" asp-route-sortBy="@Model.SortBy" asp-route-ascending="@Model.Ascending">Next</a>
+        </li>
+    </ul>
+</nav>
+
+<p>Showing @Model.Items.Count() of @Model.TotalCount movies (Page @Model.CurrentPage of @Model.TotalPages)</p>

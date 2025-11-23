@@ -16,6 +16,12 @@ namespace Tp3.Models
         // Navigation property to Genre (many-to-one)
         public Genre? Genre { get; set; }
 
+        // Image file path or URL
+        public string? ImageFile { get; set; }
+
+        // Date when movie was added
+        public DateTime? DateAjoutMovie { get; set; }
+
         // Many-to-many: movies can be associated with many customers
         public ICollection<Customer> Customers { get; set; } = new List<Customer>();
     }

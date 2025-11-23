@@ -1,0 +1,40 @@
+@model Tp3.ViewModels.MovieViewModel
+
+@{
+    ViewData["Title"] = "Movie Details";
+}
+
+<h1>Movie Details</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">ID</dt>
+        <dd class="col-sm-10">@Model.Id</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.Name)</dt>
+        <dd class="col-sm-10">@Model.Name</dd>
+
+        <dt class="col-sm-2">Genre</dt>
+        <dd class="col-sm-10">@Model.GenreName</dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.ImageFile)</dt>
+        <dd class="col-sm-10">
+            @if (!string.IsNullOrEmpty(Model.ImageFile))
+            {
+                <img src="@Model.ImageFile" alt="@Model.Name" style="max-width: 300px; max-height: 300px;" class="img-thumbnail" />
+            }
+            else
+            {
+                <span>No image</span>
+            }
+        </dd>
+
+        <dt class="col-sm-2">@Html.DisplayNameFor(model => model.DateAjoutMovie)</dt>
+        <dd class="col-sm-10">@(Model.DateAjoutMovie?.ToString("yyyy-MM-dd") ?? "N/A")</dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

@@ -1,0 +1,67 @@
+@model Tp3.ViewModels.MovieViewModel
+
+@{
+    ViewData["Title"] = "Edit Movie";
+}
+
+<h1>Edit Movie</h1>
+
+<hr />
+
+@if (ViewBag.Errors != null)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var error in ViewBag.Errors)
+            {
+                <li>@error</li>
+            }
+        </ul>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="GenreId" class="control-label"></label>
+                <select asp-for="GenreId" class="form-control" asp-items="ViewBag.Genres">
+                    <option value="">-- Select Genre --</option>
+                </select>
+                <span asp-validation-for="GenreId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @if (!string.IsNullOrEmpty(Model.ImageFile))
+                {
+                    <div class="mb-2">
+                        <label>Current Image:</label><br />
+                        <img src="@Model.ImageFile" alt="Current movie image" style="max-width: 200px; max-height: 200px;" />
+                    </div>
+                }
+                <label for="imageFile" class="control-label">Change Image File</label>
+                <input type="file" id="imageFile" name="imageFile" class="form-control" accept="image/*" />
+                <small class="form-text text-muted">Select a new image file to replace the current one</small>
+            </div>
+            <div class="form-group">
+                <label asp-for="DateAjoutMovie" class="control-label"></label>
+                <input asp-for="DateAjoutMovie" class="form-control" type="date" />
+                <span asp-validation-for="DateAjoutMovie" class="text-danger"></span>
+            </div>
+            <div class="form-group mt-3">
+                <input type="submit" value="Save" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
