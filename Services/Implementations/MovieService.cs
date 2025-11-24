@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Tp3.Models;
-using Tp3.Repositories;
+using Tp3.Repositories.Interfaces;
 using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 

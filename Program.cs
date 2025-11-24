@@ -1,8 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Tp3.Data;
-using Tp3.Repositories;
+using Tp3.Repositories.Implementations;
+using Tp3.Repositories.Interfaces;
 using Tp3.Services.Interfaces;
 using Tp3.Services.Implementations;
+
+// TODO: Layout + LINQ
 
 // Enable legacy timestamp behavior for Npgsql to avoid UTC issues
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);

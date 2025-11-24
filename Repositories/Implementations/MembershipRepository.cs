@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Tp3.Data;
 using Tp3.Models;
+using Tp3.Repositories.Interfaces;
 
-namespace Tp3.Repositories
+
+namespace Tp3.Repositories.Implementations
 {
     public class MembershipRepository : Repository<Membership>, IMembershipRepository
     {

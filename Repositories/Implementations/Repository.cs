@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using Tp3.Data;
+using Tp3.Repositories.Interfaces;
 
-namespace Tp3.Repositories
+namespace Tp3.Repositories.Implementations
 {
     public class Repository<T> : IRepository<T> where T : class
     {

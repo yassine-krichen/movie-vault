@@ -1,7 +1,7 @@
 using Tp3.Models;
 using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
-using Tp3.Repositories;
+using Tp3.Repositories.Interfaces;
 
 namespace Tp3.Services.Implementations;
 
