@@ -34,8 +34,49 @@ builder.Services.AddScoped<IGenreService, GenreService>();
 builder.Services.AddScoped<IMembershipService, MembershipService>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 
+// Register database seeder
+builder.Services.AddScoped<DatabaseSeeder>();
 
 var app = builder.Build();
+
+// Handle database seeding
+if (args.Contains("--seed") || args.Contains("--seed-reset"))
+{
+    using (var scope = app.Services.CreateScope())
+    {
+        var seeder = scope.ServiceProvider.GetRequiredService<DatabaseSeeder>();
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+        try
+        {
+            if (args.Contains("--seed-reset"))
+            {
+                logger.LogInformation("Resetting database before seeding...");
+                await seeder.ResetDatabaseAsync();
+            }
+
+            var hasData = await seeder.HasDataAsync();
+            if (!hasData || args.Contains("--force"))
+            {
+                logger.LogInformation("Starting database seeding...");
+                await seeder.SeedDataAsync();
+                logger.LogInformation("Database seeding completed successfully");
+            }
+            else if (args.Contains("--seed"))
+            {
+                logger.LogInformation("Database already contains data. Use --seed-reset or --seed --force to override.");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred during database seeding");
+            Environment.Exit(1);
+        }
+    }
+
+    // Exit after seeding
+    Environment.Exit(0);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
