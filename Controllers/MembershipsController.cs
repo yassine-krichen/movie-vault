@@ -1,68 +1,31 @@
 using Microsoft.AspNetCore.Mvc;
-using Tp3.Models;
-using Tp3.Repositories;
+using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 
 namespace Tp3.Controllers
 {
     public class MembershipsController : Controller
     {
-        private readonly IMembershipRepository _membershipRepository;
-        private const int PageSize = 10;
+        private readonly IMembershipService _service;
 
-        public MembershipsController(IMembershipRepository membershipRepository)
+        public MembershipsController(IMembershipService service)
         {
-            _membershipRepository = membershipRepository;
+            _service = service;
         }
 
         // GET: Memberships
         public async Task<IActionResult> Index(int page = 1, string? sortBy = null, bool ascending = true)
         {
-            if (page < 1) page = 1;
-            sortBy ??= "DurationInMonths";
-
-            var (items, totalCount) = await _membershipRepository.GetPagedAsync(page, PageSize, sortBy, ascending);
-            
-            var membershipViewModels = items.Select(m => new MembershipViewModel
-            {
-                Id = m.Id,
-                SignupFee = m.SignupFee,
-                DurationInMonths = m.DurationInMonths,
-                DiscountRate = m.DiscountRate
-            }).ToList();
-
-            var viewModel = new PaginatedListViewModel<MembershipViewModel>
-            {
-                Items = membershipViewModels,
-                CurrentPage = page,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize),
-                PageSize = PageSize,
-                TotalCount = totalCount,
-                SortBy = sortBy,
-                Ascending = ascending
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetPagedAsync(page, 10, sortBy ?? "DurationInMonths", ascending);
+            return View(vm);
         }
 
         // GET: Memberships/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var membership = await _membershipRepository.GetByIdAsync(id);
-            if (membership == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new MembershipViewModel
-            {
-                Id = membership.Id,
-                SignupFee = membership.SignupFee,
-                DurationInMonths = membership.DurationInMonths,
-                DiscountRate = membership.DiscountRate
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetDetailsAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         // GET: Memberships/Create
@@ -78,14 +41,7 @@ namespace Tp3.Controllers
         {
             if (ModelState.IsValid)
             {
-                var membership = new Membership
-                {
-                    SignupFee = viewModel.SignupFee,
-                    DurationInMonths = viewModel.DurationInMonths,
-                    DiscountRate = viewModel.DiscountRate
-                };
-
-                await _membershipRepository.AddAsync(membership);
+                await _service.CreateAsync(viewModel);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -96,21 +52,9 @@ namespace Tp3.Controllers
         // GET: Memberships/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var membership = await _membershipRepository.GetByIdAsync(id);
-            if (membership == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new MembershipViewModel
-            {
-                Id = membership.Id,
-                SignupFee = membership.SignupFee,
-                DurationInMonths = membership.DurationInMonths,
-                DiscountRate = membership.DiscountRate
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetEditAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         // POST: Memberships/Edit/5
@@ -119,23 +63,11 @@ namespace Tp3.Controllers
         public async Task<IActionResult> Edit(int id, MembershipViewModel viewModel)
         {
             if (id != viewModel.Id)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
-                var membership = await _membershipRepository.GetByIdAsync(id);
-                if (membership == null)
-                {
-                    return NotFound();
-                }
-
-                membership.SignupFee = viewModel.SignupFee;
-                membership.DurationInMonths = viewModel.DurationInMonths;
-                membership.DiscountRate = viewModel.DiscountRate;
-
-                await _membershipRepository.UpdateAsync(membership);
+                await _service.UpdateAsync(id, viewModel);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -146,21 +78,9 @@ namespace Tp3.Controllers
         // GET: Memberships/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var membership = await _membershipRepository.GetByIdAsync(id);
-            if (membership == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new MembershipViewModel
-            {
-                Id = membership.Id,
-                SignupFee = membership.SignupFee,
-                DurationInMonths = membership.DurationInMonths,
-                DiscountRate = membership.DiscountRate
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetDeleteAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         // POST: Memberships/Delete/5
@@ -168,7 +88,7 @@ namespace Tp3.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _membershipRepository.DeleteAsync(id);
+            await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 

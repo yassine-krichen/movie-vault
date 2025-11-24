@@ -1,64 +1,31 @@
 using Microsoft.AspNetCore.Mvc;
-using Tp3.Models;
-using Tp3.Repositories;
+using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 
 namespace Tp3.Controllers
 {
     public class GenresController : Controller
     {
-        private readonly IGenreRepository _genreRepository;
-        private const int PageSize = 10;
+        private readonly IGenreService _service;
 
-        public GenresController(IGenreRepository genreRepository)
+        public GenresController(IGenreService service)
         {
-            _genreRepository = genreRepository;
+            _service = service;
         }
 
         // GET: Genres
         public async Task<IActionResult> Index(int page = 1, string? sortBy = null, bool ascending = true)
         {
-            if (page < 1) page = 1;
-            sortBy ??= "GenreName";
-
-            var (items, totalCount) = await _genreRepository.GetPagedAsync(page, PageSize, sortBy, ascending);
-            
-            var genreViewModels = items.Select(g => new GenreViewModel
-            {
-                Id = g.Id,
-                GenreName = g.GenreName
-            }).ToList();
-
-            var viewModel = new PaginatedListViewModel<GenreViewModel>
-            {
-                Items = genreViewModels,
-                CurrentPage = page,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)PageSize),
-                PageSize = PageSize,
-                TotalCount = totalCount,
-                SortBy = sortBy,
-                Ascending = ascending
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetPagedAsync(page, 10, sortBy ?? "GenreName", ascending);
+            return View(vm);
         }
 
         // GET: Genres/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var genre = await _genreRepository.GetByIdAsync(id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new GenreViewModel
-            {
-                Id = genre.Id,
-                GenreName = genre.GenreName
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetDetailsAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         // GET: Genres/Create
@@ -74,12 +41,7 @@ namespace Tp3.Controllers
         {
             if (ModelState.IsValid)
             {
-                var genre = new Genre
-                {
-                    GenreName = viewModel.GenreName
-                };
-
-                await _genreRepository.AddAsync(genre);
+                await _service.CreateAsync(viewModel);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -90,19 +52,9 @@ namespace Tp3.Controllers
         // GET: Genres/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var genre = await _genreRepository.GetByIdAsync(id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new GenreViewModel
-            {
-                Id = genre.Id,
-                GenreName = genre.GenreName
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetEditAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         // POST: Genres/Edit/5
@@ -111,21 +63,11 @@ namespace Tp3.Controllers
         public async Task<IActionResult> Edit(int id, GenreViewModel viewModel)
         {
             if (id != viewModel.Id)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
-                var genre = await _genreRepository.GetByIdAsync(id);
-                if (genre == null)
-                {
-                    return NotFound();
-                }
-
-                genre.GenreName = viewModel.GenreName;
-
-                await _genreRepository.UpdateAsync(genre);
+                await _service.UpdateAsync(id, viewModel);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -136,19 +78,9 @@ namespace Tp3.Controllers
         // GET: Genres/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
-            var genre = await _genreRepository.GetByIdAsync(id);
-            if (genre == null)
-            {
-                return NotFound();
-            }
-
-            var viewModel = new GenreViewModel
-            {
-                Id = genre.Id,
-                GenreName = genre.GenreName
-            };
-
-            return View(viewModel);
+            var vm = await _service.GetDeleteAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
         }
 
         // POST: Genres/Delete/5
@@ -156,7 +88,7 @@ namespace Tp3.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _genreRepository.DeleteAsync(id);
+            await _service.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
