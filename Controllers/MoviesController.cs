@@ -24,7 +24,6 @@ namespace Tp3.Controllers
     public async Task<IActionResult> Details(int id)
     {
         var vm = await _service.GetDetailsAsync(id);
-        if (vm == null) return NotFound();
         return View(vm);
     }
 
@@ -51,8 +50,6 @@ namespace Tp3.Controllers
     public async Task<IActionResult> Edit(int id)
     {
         var vm = await _service.GetEditAsync(id);
-        if (vm == null) return NotFound();
-
         ViewBag.Genres = new SelectList(await _service.GetAllGenresAsync(), "Id", "GenreName");
         return View(vm);
     }
@@ -69,17 +66,13 @@ namespace Tp3.Controllers
             return View(vm);
         }
 
-        var updated = await _service.UpdateAsync(vm, imageFile);
-        if (updated == null) return NotFound();
-
+        await _service.UpdateAsync(vm, imageFile);
         return RedirectToAction(nameof(Index));
     }
 
     public async Task<IActionResult> Delete(int id)
     {
         var vm = await _service.GetDeleteAsync(id);
-        if (vm == null) return NotFound();
-
         return View(vm);
     }
 

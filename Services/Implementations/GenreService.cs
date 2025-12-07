@@ -2,6 +2,7 @@ using Tp3.Models;
 using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 using Tp3.Repositories.Interfaces;
+using Tp3.Exceptions;
 
 namespace Tp3.Services.Implementations;
 
@@ -40,11 +41,11 @@ public class GenreService : IGenreService
         };
     }
 
-    public async Task<GenreViewModel?> GetDetailsAsync(int id)
+    public async Task<GenreViewModel> GetDetailsAsync(int id)
     {
         var genre = await _genreRepository.GetByIdAsync(id);
         if (genre == null)
-            return null;
+            throw new NotFoundException("Genre", id);
 
         return new GenreViewModel
         {
@@ -53,11 +54,11 @@ public class GenreService : IGenreService
         };
     }
 
-    public async Task<GenreViewModel?> GetEditAsync(int id)
+    public async Task<GenreViewModel> GetEditAsync(int id)
     {
         var genre = await _genreRepository.GetByIdAsync(id);
         if (genre == null)
-            return null;
+            throw new NotFoundException("Genre", id);
 
         return new GenreViewModel
         {
@@ -79,18 +80,18 @@ public class GenreService : IGenreService
     public async Task UpdateAsync(int id, GenreViewModel viewModel)
     {
         var genre = await _genreRepository.GetByIdAsync(id);
-        if (genre != null)
-        {
-            genre.GenreName = viewModel.GenreName;
-            await _genreRepository.UpdateAsync(genre);
-        }
+        if (genre == null)
+            throw new NotFoundException("Genre", id);
+
+        genre.GenreName = viewModel.GenreName;
+        await _genreRepository.UpdateAsync(genre);
     }
 
-    public async Task<GenreViewModel?> GetDeleteAsync(int id)
+    public async Task<GenreViewModel> GetDeleteAsync(int id)
     {
         var genre = await _genreRepository.GetByIdAsync(id);
         if (genre == null)
-            return null;
+            throw new NotFoundException("Genre", id);
 
         return new GenreViewModel
         {

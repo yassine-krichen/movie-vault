@@ -24,7 +24,6 @@ namespace Tp3.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var vm = await _service.GetDetailsAsync(id);
-            if (vm == null) return NotFound();
             return View(vm);
         }
 
@@ -53,7 +52,6 @@ namespace Tp3.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var vm = await _service.GetEditAsync(id);
-            if (vm == null) return NotFound();
             return View(vm);
         }
 
@@ -79,7 +77,6 @@ namespace Tp3.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var vm = await _service.GetDeleteAsync(id);
-            if (vm == null) return NotFound();
             return View(vm);
         }
 

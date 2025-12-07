@@ -3,6 +3,7 @@ using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 using Tp3.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Tp3.Exceptions;
 
 namespace Tp3.Services.Implementations;
 
@@ -52,11 +53,11 @@ public class CustomerService : ICustomerService
         };
     }
 
-    public async Task<CustomerViewModel?> GetDetailsAsync(int id)
+    public async Task<CustomerViewModel> GetDetailsAsync(int id)
     {
         var customer = await _customerRepository.GetByIdWithDetailsAsync(id);
         if (customer == null)
-            return null;
+            throw new NotFoundException("Customer", id);
 
         return new CustomerViewModel
         {
@@ -69,11 +70,11 @@ public class CustomerService : ICustomerService
         };
     }
 
-    public async Task<CustomerViewModel?> GetEditAsync(int id)
+    public async Task<CustomerViewModel> GetEditAsync(int id)
     {
         var customer = await _customerRepository.GetByIdAsync(id);
         if (customer == null)
-            return null;
+            throw new NotFoundException("Customer", id);
 
         return new CustomerViewModel
         {
@@ -97,19 +98,19 @@ public class CustomerService : ICustomerService
     public async Task UpdateAsync(int id, CustomerViewModel viewModel)
     {
         var customer = await _customerRepository.GetByIdAsync(id);
-        if (customer != null)
-        {
-            customer.Name = viewModel.Name;
-            customer.MembershipId = viewModel.MembershipId;
-            await _customerRepository.UpdateAsync(customer);
-        }
+        if (customer == null)
+            throw new NotFoundException("Customer", id);
+
+        customer.Name = viewModel.Name;
+        customer.MembershipId = viewModel.MembershipId;
+        await _customerRepository.UpdateAsync(customer);
     }
 
-    public async Task<CustomerViewModel?> GetDeleteAsync(int id)
+    public async Task<CustomerViewModel> GetDeleteAsync(int id)
     {
         var customer = await _customerRepository.GetByIdWithDetailsAsync(id);
         if (customer == null)
-            return null;
+            throw new NotFoundException("Customer", id);
 
         return new CustomerViewModel
         {

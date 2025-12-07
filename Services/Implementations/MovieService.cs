@@ -4,6 +4,7 @@ using Tp3.Models;
 using Tp3.Repositories.Interfaces;
 using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
+using Tp3.Exceptions;
 
 namespace Tp3.Services.Implementations;
 
@@ -47,10 +48,11 @@ public class MovieService : IMovieService
         };
     }
 
-    public async Task<MovieViewModel?> GetDetailsAsync(int id)
+    public async Task<MovieViewModel> GetDetailsAsync(int id)
     {
         var movie = await _movies.GetByIdWithDetailsAsync(id);
-        if (movie == null) return null;
+        if (movie == null) 
+            throw new NotFoundException("Movie", id);
 
         return new MovieViewModel
         {
@@ -63,10 +65,11 @@ public class MovieService : IMovieService
         };
     }
 
-    public async Task<MovieViewModel?> GetEditAsync(int id)
+    public async Task<MovieViewModel> GetEditAsync(int id)
     {
         var movie = await _movies.GetByIdAsync(id);
-        if (movie == null) return null;
+        if (movie == null) 
+            throw new NotFoundException("Movie", id);
 
         return new MovieViewModel
         {
@@ -78,7 +81,7 @@ public class MovieService : IMovieService
         };
     }
 
-    public async Task<Movie?> CreateAsync(MovieViewModel viewModel, IFormFile? imageFile)
+    public async Task<Movie> CreateAsync(MovieViewModel viewModel, IFormFile? imageFile)
     {
         var movie = new Movie
         {
@@ -93,10 +96,11 @@ public class MovieService : IMovieService
         return movie;
     }
 
-    public async Task<Movie?> UpdateAsync(MovieViewModel viewModel, IFormFile? imageFile)
+    public async Task<Movie> UpdateAsync(MovieViewModel viewModel, IFormFile? imageFile)
     {
         var movie = await _movies.GetByIdAsync(viewModel.Id);
-        if (movie == null) return null;
+        if (movie == null) 
+            throw new NotFoundException("Movie", viewModel.Id);
 
         movie.Name = viewModel.Name;
         movie.GenreId = viewModel.GenreId;
@@ -112,10 +116,11 @@ public class MovieService : IMovieService
         return movie;
     }
 
-    public async Task<MovieViewModel?> GetDeleteAsync(int id)
+    public async Task<MovieViewModel> GetDeleteAsync(int id)
     {
         var movie = await _movies.GetByIdWithDetailsAsync(id);
-        if (movie == null) return null;
+        if (movie == null) 
+            throw new NotFoundException("Movie", id);
 
         return new MovieViewModel
         {
@@ -131,7 +136,10 @@ public class MovieService : IMovieService
     public async Task DeleteAsync(int id)
     {
         var movie = await _movies.GetByIdAsync(id);
-        if (movie != null && movie.ImageFile != null)
+        if (movie == null)
+            throw new NotFoundException("Movie", id);
+
+        if (movie.ImageFile != null)
             DeleteImageIfExists(movie.ImageFile);
 
         await _movies.DeleteAsync(id);

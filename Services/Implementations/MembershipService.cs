@@ -2,6 +2,7 @@ using Tp3.Models;
 using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 using Tp3.Repositories.Interfaces;
+using Tp3.Exceptions;
 
 namespace Tp3.Services.Implementations;
 
@@ -42,11 +43,11 @@ public class MembershipService : IMembershipService
         };
     }
 
-    public async Task<MembershipViewModel?> GetDetailsAsync(int id)
+    public async Task<MembershipViewModel> GetDetailsAsync(int id)
     {
         var membership = await _membershipRepository.GetByIdAsync(id);
         if (membership == null)
-            return null;
+            throw new NotFoundException("Membership", id);
 
         return new MembershipViewModel
         {
@@ -57,11 +58,11 @@ public class MembershipService : IMembershipService
         };
     }
 
-    public async Task<MembershipViewModel?> GetEditAsync(int id)
+    public async Task<MembershipViewModel> GetEditAsync(int id)
     {
         var membership = await _membershipRepository.GetByIdAsync(id);
         if (membership == null)
-            return null;
+            throw new NotFoundException("Membership", id);
 
         return new MembershipViewModel
         {
@@ -87,20 +88,20 @@ public class MembershipService : IMembershipService
     public async Task UpdateAsync(int id, MembershipViewModel viewModel)
     {
         var membership = await _membershipRepository.GetByIdAsync(id);
-        if (membership != null)
-        {
-            membership.SignupFee = viewModel.SignupFee;
-            membership.DurationInMonths = viewModel.DurationInMonths;
-            membership.DiscountRate = viewModel.DiscountRate;
-            await _membershipRepository.UpdateAsync(membership);
-        }
+        if (membership == null)
+            throw new NotFoundException("Membership", id);
+
+        membership.SignupFee = viewModel.SignupFee;
+        membership.DurationInMonths = viewModel.DurationInMonths;
+        membership.DiscountRate = viewModel.DiscountRate;
+        await _membershipRepository.UpdateAsync(membership);
     }
 
-    public async Task<MembershipViewModel?> GetDeleteAsync(int id)
+    public async Task<MembershipViewModel> GetDeleteAsync(int id)
     {
         var membership = await _membershipRepository.GetByIdAsync(id);
         if (membership == null)
-            return null;
+            throw new NotFoundException("Membership", id);
 
         return new MembershipViewModel
         {
@@ -113,6 +114,10 @@ public class MembershipService : IMembershipService
 
     public async Task DeleteAsync(int id)
     {
+        var membership = await _membershipRepository.GetByIdAsync(id);
+        if (membership == null)
+            throw new NotFoundException("Membership", id);
+
         await _membershipRepository.DeleteAsync(id);
     }
 }

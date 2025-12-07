@@ -4,13 +4,29 @@ using Tp3.Repositories.Implementations;
 using Tp3.Repositories.Interfaces;
 using Tp3.Services.Interfaces;
 using Tp3.Services.Implementations;
+using Tp3.Middleware;
+using Serilog;
 
 // TODO: Layout + LINQ
 
 // Enable legacy timestamp behavior for Npgsql to avoid UTC issues
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console();
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -79,9 +95,12 @@ if (args.Contains("--seed") || args.Contains("--seed-reset"))
 }
 
 // Configure the HTTP request pipeline.
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
+app.UseSerilogRequestLogging();
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    // app.UseExceptionHandler("/Home/Error"); // Replaced by GlobalExceptionHandlerMiddleware
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
