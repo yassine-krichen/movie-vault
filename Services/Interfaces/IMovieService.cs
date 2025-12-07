@@ -13,4 +13,10 @@ public interface IMovieService
     Task<MovieViewModel?> GetDeleteAsync(int id);
     Task DeleteAsync(int id);
     Task<List<Genre>> GetAllGenresAsync();
+
+    // LINQ Tasks
+    Task<List<Movie>> GetAvailableActionMoviesAsync();
+    Task<List<Movie>> GetMoviesOrderedByDateAndNameAsync();
+    Task<int> GetTotalMovieCountAsync();
+    Task<List<MovieGenreViewModel>> GetMoviesWithGenresAsync();
 }

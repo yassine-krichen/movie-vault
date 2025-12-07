@@ -103,4 +103,16 @@ public class GenreService : IGenreService
     {
         await _genreRepository.DeleteAsync(id);
     }
+
+    // LINQ Tasks Implementation
+
+    public async Task<List<Genre>> GetTopPopularGenresAsync()
+    {
+        // 6. Return the 3 most popular genres (those with the most movies)
+        var genres = await _genreRepository.GetAllWithMoviesAsync();
+        return genres
+            .OrderByDescending(g => g.Movies.Count)
+            .Take(3)
+            .ToList();
+    }
 }

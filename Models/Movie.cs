@@ -22,6 +22,9 @@ namespace Tp3.Models
         // Date when movie was added
         public DateTime? DateAjoutMovie { get; set; }
 
+        // Stock quantity
+        public int Stock { get; set; }
+
         // Many-to-many: movies can be associated with many customers
         public ICollection<Customer> Customers { get; set; } = new List<Customer>();
     }

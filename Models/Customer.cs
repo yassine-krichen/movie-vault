@@ -16,6 +16,9 @@ namespace Tp3.Models
         // Navigation property
         public Membership? Membership { get; set; }
 
+        // Newsletter subscription status
+        public bool IsSubscribedToNewsletter { get; set; }
+
         // Many-to-many: customers can have many movies (e.g., rented/favorite)
         public ICollection<Movie> Movies { get; set; } = new List<Movie>();
     }

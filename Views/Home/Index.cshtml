@@ -3,6 +3,24 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Welcome to MovieVault</h1>
+    <p class="lead">The ultimate platform for managing your movie rental business.</p>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <h3>Manage Movies</h3>
+        <p>Browse our extensive collection of movies, manage stock, and update details.</p>
+        <a class="btn btn-secondary" asp-controller="Movies" asp-action="Index">View Movies &raquo;</a>
+    </div>
+    <div class="col-md-4">
+        <h3>Customer Management</h3>
+        <p>Keep track of your customers, their memberships, and subscription status.</p>
+        <a class="btn btn-secondary" asp-controller="Customers" asp-action="Index">View Customers &raquo;</a>
+    </div>
+    <div class="col-md-4">
+        <h3>Business Insights</h3>
+        <p>Analyze your data with our powerful LINQ-based statistics dashboard.</p>
+        <a class="btn btn-secondary" asp-controller="Statistics" asp-action="Index">View Statistics &raquo;</a>
+    </div>
 </div>

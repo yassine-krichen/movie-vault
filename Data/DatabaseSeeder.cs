@@ -213,7 +213,8 @@ namespace Tp3.Data
                     Name = movieTitles[i],
                     GenreId = randomGenre.Id,
                     ImageFile = defaultImagePath,
-                    DateAjoutMovie = DateTime.Now.AddDays(daysOffset)
+                    DateAjoutMovie = DateTime.Now.AddDays(daysOffset),
+                    Stock = _random.Next(0, 21) // Random stock between 0 and 20
                 });
             }
 
@@ -240,6 +241,7 @@ namespace Tp3.Data
                 {
                     Name = $"{firstName} {lastName}",
                     MembershipId = randomMembership.Id,
+                    IsSubscribedToNewsletter = _random.Next(2) == 0, // Random boolean
                     Movies = new List<Movie>()
                 };
 

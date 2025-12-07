@@ -14,4 +14,7 @@ public interface ICustomerService
     Task<CustomerViewModel?> GetDeleteAsync(int id);
     Task DeleteAsync(int id);
     Task<List<SelectListItem>> GetMembershipsDropdownAsync();
+
+    // LINQ Tasks
+    Task<List<Customer>> GetSubscribedCustomersWithDiscountAsync();
 }

@@ -167,4 +167,49 @@ public class MovieService : IMovieService
         if (File.Exists(physical))
             File.Delete(physical);
     }
+
+    // LINQ Tasks Implementation
+
+    public async Task<List<Movie>> GetAvailableActionMoviesAsync()
+    {
+        // 1. List all movies associated with the genre "Action" and where stock > 0
+        var movies = await _movies.GetAllWithGenreAsync();
+        return movies
+            .Where(m => m.Genre?.GenreName == "Action" && m.Stock > 0)
+            .ToList();
+    }
+
+    public async Task<List<Movie>> GetMoviesOrderedByDateAndNameAsync()
+    {
+        // 2. List all movies ordered by release date then by title alphabetically
+        var movies = await _movies.GetAllAsync();
+        return movies
+            .OrderBy(m => m.DateAjoutMovie)
+            .ThenBy(m => m.Name)
+            .ToList();
+    }
+
+    public async Task<int> GetTotalMovieCountAsync()
+    {
+        // 3. Calculate the total number of movies in the store
+        var movies = await _movies.GetAllAsync();
+        return movies.Count();
+    }
+
+    public async Task<List<MovieGenreViewModel>> GetMoviesWithGenresAsync()
+    {
+        // 5. Display the list of movies with their genre using a join between Movie and Genre
+        var movies = await _movies.GetAllAsync();
+        var genres = await _genres.GetAllAsync();
+
+        var query = from m in movies
+                    join g in genres on m.GenreId equals g.Id
+                    select new MovieGenreViewModel
+                    {
+                        MovieTitle = m.Name,
+                        GenreName = g.GenreName
+                    };
+
+        return query.ToList();
+    }
 }

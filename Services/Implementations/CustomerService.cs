@@ -136,4 +136,15 @@ public class CustomerService : ICustomerService
             Text = $"{m.DurationInMonths} months"
         }).ToList();
     }
+
+    // LINQ Tasks Implementation
+
+    public async Task<List<Customer>> GetSubscribedCustomersWithDiscountAsync()
+    {
+        // 4. Find all customers subscribed to the newsletter having a membership with a discount > 10%
+        var customers = await _customerRepository.GetAllWithMembershipAsync();
+        return customers
+            .Where(c => c.IsSubscribedToNewsletter && c.Membership?.DiscountRate > 10)
+            .ToList();
+    }
 }

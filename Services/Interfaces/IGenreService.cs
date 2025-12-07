@@ -12,4 +12,7 @@ public interface IGenreService
     Task UpdateAsync(int id, GenreViewModel viewModel);
     Task<GenreViewModel?> GetDeleteAsync(int id);
     Task DeleteAsync(int id);
+
+    // LINQ Tasks
+    Task<List<Genre>> GetTopPopularGenresAsync();
 }
