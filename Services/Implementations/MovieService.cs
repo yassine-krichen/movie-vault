@@ -81,8 +81,14 @@ public class MovieService : IMovieService
         };
     }
 
+    /// <summary>
+    /// Creates a new movie and handles the optional image upload.
+    /// </summary>
+    /// <param name="viewModel">The data from the form.</param>
+    /// <param name="imageFile">The uploaded file (if any).</param>
     public async Task<Movie> CreateAsync(MovieViewModel viewModel, IFormFile? imageFile)
     {
+        // 1. Map the ViewModel (View data) to the Entity (Database data)
         var movie = new Movie
         {
             Name = viewModel.Name,
@@ -90,7 +96,11 @@ public class MovieService : IMovieService
             DateAjoutMovie = viewModel.DateAjoutMovie ?? DateTime.Now
         };
 
+        // 2. Handle the image upload logic
+        // This saves the file to disk and returns the relative path (e.g., "/images/movies/guid.jpg")
         movie.ImageFile = await UploadImageAsync(imageFile);
+
+        // 3. Save the new entity to the database via the Repository
         await _movies.AddAsync(movie);
 
         return movie;
@@ -98,20 +108,26 @@ public class MovieService : IMovieService
 
     public async Task<Movie> UpdateAsync(MovieViewModel viewModel, IFormFile? imageFile)
     {
+        // 1. Fetch the existing movie from DB
         var movie = await _movies.GetByIdAsync(viewModel.Id);
         if (movie == null) 
             throw new NotFoundException("Movie", viewModel.Id);
 
+        // 2. Update properties
         movie.Name = viewModel.Name;
         movie.GenreId = viewModel.GenreId;
         movie.DateAjoutMovie = viewModel.DateAjoutMovie;
 
+        // 3. Handle Image Update
         if (imageFile != null)
         {
+            // If a new image is uploaded, delete the old one to save space
             DeleteImageIfExists(movie.ImageFile);
+            // Upload the new one
             movie.ImageFile = await UploadImageAsync(imageFile);
         }
 
+        // 4. Save changes
         await _movies.UpdateAsync(movie);
         return movie;
     }
@@ -151,19 +167,34 @@ public class MovieService : IMovieService
          return res.ToList(); // check if this is impl correctly
     }
 
+    /// <summary>
+    /// Helper method to save an uploaded file to the server's disk.
+    /// </summary>
+    /// <param name="file">The file uploaded by the user.</param>
+    /// <returns>The relative path to the saved file (for the DB), or null if no file.</returns>
     private async Task<string?> UploadImageAsync(IFormFile? file)
     {
+        // Check if a file was actually uploaded
         if (file == null || file.Length == 0) return null;
 
+        // 1. Define the storage path: wwwroot/images/movies
+        // _env.WebRootPath points to the 'wwwroot' folder
         var folder = Path.Combine(_env.WebRootPath, "images", "movies");
-        Directory.CreateDirectory(folder);
+        Directory.CreateDirectory(folder); // Ensure folder exists
 
+        // 2. Generate a unique filename to prevent overwriting existing files
+        // Guid.NewGuid() creates a random string like "e02fd0e4-..."
         var fileName = Guid.NewGuid() + "_" + Path.GetFileName(file.FileName);
+        
+        // 3. Combine folder and filename to get the full physical path
         var path = Path.Combine(folder, fileName);
 
+        // 4. Save the file stream to the disk
         using var stream = new FileStream(path, FileMode.Create);
         await file.CopyToAsync(stream);
 
+        // 5. Return the relative path (URL) to be stored in the database
+        // This is what we use in <img src="...">
         return "/images/movies/" + fileName;
     }
 

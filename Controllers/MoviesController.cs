@@ -27,23 +27,34 @@ namespace Tp3.Controllers
         return View(vm);
     }
 
+    // GET: Movies/Create
+    // Displays the form to create a new movie
     public async Task<IActionResult> Create()
     {
+        // Prepare the dropdown list for Genres
         ViewBag.Genres = new SelectList(await _service.GetAllGenresAsync(), "Id", "GenreName");
         return View();
     }
 
+    // POST: Movies/Create
+    // Handles the form submission
+    // 'imageFile' comes from the <input type="file" name="imageFile"> in the HTML form
     [HttpPost]
-    [ValidateAntiForgeryToken]
+    [ValidateAntiForgeryToken] // Security measure to prevent CSRF attacks
     public async Task<IActionResult> Create(MovieViewModel vm, IFormFile? imageFile)
     {
+        // 1. Validate the data (checks DataAnnotations in MovieViewModel)
         if (!ModelState.IsValid)
         {
+            // If invalid, reload the form with errors and the genre list
             ViewBag.Genres = new SelectList(await _service.GetAllGenresAsync(), "Id", "GenreName");
             return View(vm);
         }
 
+        // 2. Delegate the business logic (saving to DB, handling file upload) to the Service
         await _service.CreateAsync(vm, imageFile);
+
+        // 3. Redirect to the list page upon success
         return RedirectToAction(nameof(Index));
     }
 
