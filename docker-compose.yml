@@ -15,7 +15,7 @@ services:
             - db
 
     db:
-        image: postgres:latest
+        image: postgres:16
         environment:
             - POSTGRES_DB=tp3
             - POSTGRES_USER=postgres
