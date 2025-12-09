@@ -24,6 +24,8 @@ services:
             - "5432:5432"
         volumes:
             - postgres_data:/var/lib/postgresql/data
+            - aspnet_data_protection:/root/.aspnet/DataProtection-Keys
 
 volumes:
     postgres_data:
+    aspnet_data_protection:

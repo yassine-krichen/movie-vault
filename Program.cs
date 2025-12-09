@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Tp3.Data;
 using Tp3.Repositories.Implementations;
@@ -31,7 +34,13 @@ builder.Host.UseSerilog((context, services, configuration) =>
 });
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
 
 // Add DbContext with PostgreSQL and Audit Interceptor
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -40,6 +49,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
            .AddInterceptors(new AuditInterceptor())
 );
+
+builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = false)
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 // Register AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
@@ -64,6 +76,25 @@ builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddScoped<DatabaseSeeder>();
 
 var app = builder.Build();
+
+// Apply migrations automatically
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ApplicationDbContext>();
+        if (context.Database.GetPendingMigrations().Any())
+        {
+            await context.Database.MigrateAsync();
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred while migrating the database.");
+    }
+}
 
 // Handle database seeding
 if (args.Contains("--seed") || args.Contains("--seed-reset"))
@@ -105,26 +136,31 @@ if (args.Contains("--seed") || args.Contains("--seed-reset"))
 }
 
 // Configure the HTTP request pipeline.
-app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
-app.UseSerilogRequestLogging();
-
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    // app.UseExceptionHandler("/Home/Error"); // Replaced by GlobalExceptionHandlerMiddleware
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
     app.UseHsts();
 }
+
+app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapRazorPages();
 
 // Health Check endpoint with JSON UI output
 app.MapHealthChecks("/health", new HealthCheckOptions

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Authorization;
 using Tp3.Models;
 using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
