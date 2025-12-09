@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Tp3.Data;
 using Tp3.Repositories.Implementations;
 using Tp3.Repositories.Interfaces;
@@ -6,8 +7,9 @@ using Tp3.Services.Interfaces;
 using Tp3.Services.Implementations;
 using Tp3.Middleware;
 using Serilog;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using HealthChecks.UI.Client;
 
-// TODO: Layout + LINQ
 
 // Enable legacy timestamp behavior for Npgsql to avoid UTC issues
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
@@ -32,11 +34,19 @@ builder.Host.UseSerilog((context, services, configuration) =>
 builder.Services.AddControllersWithViews();
 
 // Add DbContext with PostgreSQL and Audit Interceptor
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString)
            .AddInterceptors(new AuditInterceptor())
 );
+
+// Register AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
+// Register Health Checks
+builder.Services.AddHealthChecks()
+    .AddNpgSql(connectionString);
 
 // Register repositories
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
@@ -116,4 +126,9 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
+// Health Check endpoint with JSON UI output
+app.MapHealthChecks("/health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 app.Run();

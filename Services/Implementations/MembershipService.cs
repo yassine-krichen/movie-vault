@@ -3,17 +3,20 @@ using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 using Tp3.Repositories.Interfaces;
 using Tp3.Exceptions;
+using AutoMapper;
 
 namespace Tp3.Services.Implementations;
 
 public class MembershipService : IMembershipService
 {
     private readonly IMembershipRepository _membershipRepository;
+    private readonly IMapper _mapper;
     private const int PageSize = 10;
 
-    public MembershipService(IMembershipRepository membershipRepository)
+    public MembershipService(IMembershipRepository membershipRepository, IMapper mapper)
     {
         _membershipRepository = membershipRepository;
+        _mapper = mapper;
     }
 
     public async Task<PaginatedListViewModel<MembershipViewModel>> GetPagedAsync(int page, int pageSize, string sortBy, bool ascending)
@@ -23,13 +26,7 @@ public class MembershipService : IMembershipService
 
         var (items, totalCount) = await _membershipRepository.GetPagedAsync(page, pageSize, sortBy, ascending);
 
-        var membershipViewModels = items.Select(m => new MembershipViewModel
-        {
-            Id = m.Id,
-            SignupFee = m.SignupFee,
-            DurationInMonths = m.DurationInMonths,
-            DiscountRate = m.DiscountRate
-        }).ToList();
+        var membershipViewModels = _mapper.Map<List<MembershipViewModel>>(items);
 
         return new PaginatedListViewModel<MembershipViewModel>
         {
@@ -49,13 +46,7 @@ public class MembershipService : IMembershipService
         if (membership == null)
             throw new NotFoundException("Membership", id);
 
-        return new MembershipViewModel
-        {
-            Id = membership.Id,
-            SignupFee = membership.SignupFee,
-            DurationInMonths = membership.DurationInMonths,
-            DiscountRate = membership.DiscountRate
-        };
+        return _mapper.Map<MembershipViewModel>(membership);
     }
 
     public async Task<MembershipViewModel> GetEditAsync(int id)
@@ -64,24 +55,12 @@ public class MembershipService : IMembershipService
         if (membership == null)
             throw new NotFoundException("Membership", id);
 
-        return new MembershipViewModel
-        {
-            Id = membership.Id,
-            SignupFee = membership.SignupFee,
-            DurationInMonths = membership.DurationInMonths,
-            DiscountRate = membership.DiscountRate
-        };
+        return _mapper.Map<MembershipViewModel>(membership);
     }
 
     public async Task CreateAsync(MembershipViewModel viewModel)
     {
-        var membership = new Membership
-        {
-            SignupFee = viewModel.SignupFee,
-            DurationInMonths = viewModel.DurationInMonths,
-            DiscountRate = viewModel.DiscountRate
-        };
-
+        var membership = _mapper.Map<Membership>(viewModel);
         await _membershipRepository.AddAsync(membership);
     }
 
@@ -91,9 +70,7 @@ public class MembershipService : IMembershipService
         if (membership == null)
             throw new NotFoundException("Membership", id);
 
-        membership.SignupFee = viewModel.SignupFee;
-        membership.DurationInMonths = viewModel.DurationInMonths;
-        membership.DiscountRate = viewModel.DiscountRate;
+        _mapper.Map(viewModel, membership);
         await _membershipRepository.UpdateAsync(membership);
     }
 
@@ -103,13 +80,7 @@ public class MembershipService : IMembershipService
         if (membership == null)
             throw new NotFoundException("Membership", id);
 
-        return new MembershipViewModel
-        {
-            Id = membership.Id,
-            SignupFee = membership.SignupFee,
-            DurationInMonths = membership.DurationInMonths,
-            DiscountRate = membership.DiscountRate
-        };
+        return _mapper.Map<MembershipViewModel>(membership);
     }
 
     public async Task DeleteAsync(int id)

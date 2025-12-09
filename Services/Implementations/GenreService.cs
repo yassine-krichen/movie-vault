@@ -3,17 +3,20 @@ using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 using Tp3.Repositories.Interfaces;
 using Tp3.Exceptions;
+using AutoMapper;
 
 namespace Tp3.Services.Implementations;
 
 public class GenreService : IGenreService
 {
     private readonly IGenreRepository _genreRepository;
+    private readonly IMapper _mapper;
     private const int PageSize = 10;
 
-    public GenreService(IGenreRepository genreRepository)
+    public GenreService(IGenreRepository genreRepository, IMapper mapper)
     {
         _genreRepository = genreRepository;
+        _mapper = mapper;
     }
 
     public async Task<PaginatedListViewModel<GenreViewModel>> GetPagedAsync(int page, int pageSize, string sortBy, bool ascending)
@@ -23,11 +26,7 @@ public class GenreService : IGenreService
 
         var (items, totalCount) = await _genreRepository.GetPagedAsync(page, pageSize, sortBy, ascending);
 
-        var genreViewModels = items.Select(g => new GenreViewModel
-        {
-            Id = g.Id,
-            GenreName = g.GenreName
-        }).ToList();
+        var genreViewModels = _mapper.Map<List<GenreViewModel>>(items);
 
         return new PaginatedListViewModel<GenreViewModel>
         {
@@ -47,11 +46,7 @@ public class GenreService : IGenreService
         if (genre == null)
             throw new NotFoundException("Genre", id);
 
-        return new GenreViewModel
-        {
-            Id = genre.Id,
-            GenreName = genre.GenreName
-        };
+        return _mapper.Map<GenreViewModel>(genre);
     }
 
     public async Task<GenreViewModel> GetEditAsync(int id)
@@ -60,20 +55,12 @@ public class GenreService : IGenreService
         if (genre == null)
             throw new NotFoundException("Genre", id);
 
-        return new GenreViewModel
-        {
-            Id = genre.Id,
-            GenreName = genre.GenreName
-        };
+        return _mapper.Map<GenreViewModel>(genre);
     }
 
     public async Task CreateAsync(GenreViewModel viewModel)
     {
-        var genre = new Genre
-        {
-            GenreName = viewModel.GenreName
-        };
-
+        var genre = _mapper.Map<Genre>(viewModel);
         await _genreRepository.AddAsync(genre);
     }
 
@@ -83,7 +70,7 @@ public class GenreService : IGenreService
         if (genre == null)
             throw new NotFoundException("Genre", id);
 
-        genre.GenreName = viewModel.GenreName;
+        _mapper.Map(viewModel, genre);
         await _genreRepository.UpdateAsync(genre);
     }
 
@@ -93,11 +80,7 @@ public class GenreService : IGenreService
         if (genre == null)
             throw new NotFoundException("Genre", id);
 
-        return new GenreViewModel
-        {
-            Id = genre.Id,
-            GenreName = genre.GenreName
-        };
+        return _mapper.Map<GenreViewModel>(genre);
     }
 
     public async Task DeleteAsync(int id)

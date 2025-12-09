@@ -5,6 +5,7 @@ using Tp3.Repositories.Interfaces;
 using Tp3.Services.Interfaces;
 using Tp3.ViewModels;
 using Tp3.Exceptions;
+using AutoMapper;
 
 namespace Tp3.Services.Implementations;
 
@@ -13,28 +14,22 @@ public class MovieService : IMovieService
     private readonly IMovieRepository _movies;
     private readonly IGenreRepository _genres;
     private readonly IWebHostEnvironment _env;
+    private readonly IMapper _mapper;
     private const int PageSize = 10;
 
-    public MovieService(IMovieRepository movies, IGenreRepository genres, IWebHostEnvironment env)
+    public MovieService(IMovieRepository movies, IGenreRepository genres, IWebHostEnvironment env, IMapper mapper)
     {
         _movies = movies;
         _genres = genres;
         _env = env;
+        _mapper = mapper;
     }
 
     public async Task<PaginatedListViewModel<MovieViewModel>> GetPagedAsync(int page, int pageSize, string sortBy, bool ascending)
     {
         var (items, totalCount) = await _movies.GetPagedAsync(page, pageSize, sortBy, ascending);
 
-        var movies = items.Select(m => new MovieViewModel
-        {
-            Id = m.Id,
-            Name = m.Name,
-            GenreId = m.GenreId,
-            GenreName = m.Genre?.GenreName,
-            ImageFile = m.ImageFile,
-            DateAjoutMovie = m.DateAjoutMovie
-        }).ToList();
+        var movies = _mapper.Map<List<MovieViewModel>>(items);
 
         return new PaginatedListViewModel<MovieViewModel>
         {
@@ -54,15 +49,7 @@ public class MovieService : IMovieService
         if (movie == null) 
             throw new NotFoundException("Movie", id);
 
-        return new MovieViewModel
-        {
-            Id = movie.Id,
-            Name = movie.Name,
-            GenreId = movie.GenreId,
-            GenreName = movie.Genre?.GenreName,
-            ImageFile = movie.ImageFile,
-            DateAjoutMovie = movie.DateAjoutMovie
-        };
+        return _mapper.Map<MovieViewModel>(movie);
     }
 
     public async Task<MovieViewModel> GetEditAsync(int id)
@@ -71,14 +58,7 @@ public class MovieService : IMovieService
         if (movie == null) 
             throw new NotFoundException("Movie", id);
 
-        return new MovieViewModel
-        {
-            Id = movie.Id,
-            Name = movie.Name,
-            GenreId = movie.GenreId,
-            ImageFile = movie.ImageFile,
-            DateAjoutMovie = movie.DateAjoutMovie
-        };
+        return _mapper.Map<MovieViewModel>(movie);
     }
 
     /// <summary>
@@ -89,12 +69,11 @@ public class MovieService : IMovieService
     public async Task<Movie> CreateAsync(MovieViewModel viewModel, IFormFile? imageFile)
     {
         // 1. Map the ViewModel (View data) to the Entity (Database data)
-        var movie = new Movie
-        {
-            Name = viewModel.Name,
-            GenreId = viewModel.GenreId,
-            DateAjoutMovie = viewModel.DateAjoutMovie ?? DateTime.Now
-        };
+        var movie = _mapper.Map<Movie>(viewModel);
+        
+        // Set default date if not provided
+        if (!movie.DateAjoutMovie.HasValue)
+            movie.DateAjoutMovie = DateTime.Now;
 
         // 2. Handle the image upload logic
         // This saves the file to disk and returns the relative path (e.g., "/images/movies/guid.jpg")
@@ -113,10 +92,8 @@ public class MovieService : IMovieService
         if (movie == null) 
             throw new NotFoundException("Movie", viewModel.Id);
 
-        // 2. Update properties
-        movie.Name = viewModel.Name;
-        movie.GenreId = viewModel.GenreId;
-        movie.DateAjoutMovie = viewModel.DateAjoutMovie;
+        // 2. Update properties using AutoMapper
+        _mapper.Map(viewModel, movie);
 
         // 3. Handle Image Update
         if (imageFile != null)
@@ -138,15 +115,7 @@ public class MovieService : IMovieService
         if (movie == null) 
             throw new NotFoundException("Movie", id);
 
-        return new MovieViewModel
-        {
-            Id = movie.Id,
-            Name = movie.Name,
-            GenreId = movie.GenreId,
-            GenreName = movie.Genre?.GenreName,
-            ImageFile = movie.ImageFile,
-            DateAjoutMovie = movie.DateAjoutMovie
-        };
+        return _mapper.Map<MovieViewModel>(movie);
     }
 
     public async Task DeleteAsync(int id)
